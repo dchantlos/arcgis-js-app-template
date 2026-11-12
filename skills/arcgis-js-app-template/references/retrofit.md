@@ -42,7 +42,7 @@ Grep for class-name collisions with the kit before linking it: `.panel`, `.chip`
 ## 4. Swap the regions (one at a time, verify after each)
 
 1. **Loader → boot veil.** Replace the overlay with `#boot.boot` markup; call `createBoot()` at startup and `await boot.track(whenViewReady(view))` where the old overlay was dismissed. Delete the old overlay CSS/JS afterwards.
-2. **Header → top bar.** `.topbar.glass` with the Dev logo `.brand`; app title in `.brand__title`; status in `.topbar__status`.
+2. **Header → top bar.** `.topbar.glass` with the Dev logo `.brand`; app title in `.brand__title`; short status or location text, if any, in `.topbar__status`.
 3. **Panels → `.panel`.** Wrap content as `__head` / `__body` / `__foot`; move scrolling to `.panel__body`; replace custom collapse buttons with `[data-panel-toggle]`. Rebuild cards with `.metric`, `.chip`, `.kicker`, `.ring-card`, `.toggle-list`.
 4. **Controls.** Default SDK zoom/compass → `.nav-stack` + `bindNavStack(view)`; tool panels → `.flyout` + `bindFlyout()`. Replace deprecated widgets with components while moving them (coordinate with the `build-with-arcgis-maps-sdk-for-javascript` skill if installed).
 5. **Bottom controls → `.dock`** (play + scrubber) when the app has a timeline or animation.

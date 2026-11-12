@@ -1,6 +1,7 @@
 // =============================================================================
 // App entry (copy to main.js). Kit wiring is marked KIT; replace the DEMO parts
-// with the app's WebScene/WebMap, layers and logic.
+// with the app's WebScene/WebMap, layers and logic. OPTIONAL parts only run when
+// their markup is enabled in index.html; delete them if the app doesn't need them.
 // =============================================================================
 
 import {
@@ -82,6 +83,19 @@ const view = new SceneView({
   )
 );
 
+// --- DEMO: dashboard summarizing the demo sites --------------------------------
+const sites = demoLayer.graphics.toArray().map((graphic) => graphic.attributes);
+const complete = sites.filter((site) => site.status === "Complete").length;
+const delayed = sites.filter((site) => site.status === "Delayed").length;
+const pctComplete = Math.round((complete / sites.length) * 100);
+document.getElementById("progressRing").style.setProperty("--pct", pctComplete);
+document.getElementById("progressPct").textContent = `${pctComplete}%`;
+document.getElementById("completeSummary").textContent = `${complete} of ${sites.length}`;
+document.getElementById("siteCount").textContent = String(sites.length);
+const delayedCount = document.getElementById("delayedCount");
+delayedCount.textContent = String(delayed);
+delayedCount.classList.toggle("is-bad", delayed > 0);
+
 // --- KIT: match the view to the theme, reveal when it has drawn ---------------
 applyViewTheme(view);
 await boot.track(whenViewReady(view));
@@ -111,7 +125,6 @@ renderLayerToggles(view.map.allLayers.filter((layer) => layer.type !== "elevatio
 bindFlyout("#toolBtn", "#toolFlyout", {
   onToggle: (open) => {
     // e.g. create an <arcgis-slice> in #toolContainer when open, destroy it when closed
-    document.getElementById("status").textContent = open ? "Tool active" : "Live";
   }
 });
 
@@ -143,44 +156,45 @@ view.on("pointer-leave", () => {
   tooltip.hide();
 });
 
-// --- DEMO: timeline dock driving the dashboard --------------------------------
+// --- OPTIONAL: timeline dock ----------------------------------------------------
+// Only for apps with time-based data, phases or animation. Runs when the dock in
+// index.html is uncommented; delete this block if the app has no timeline.
 const scrub = document.getElementById("scrub");
-const repaint = bindRange(scrub);
-const start = new Date(2025, 0, 1);
-const end = new Date(2026, 11, 31);
-const dayMs = 86400000;
-const phases = ["Site preparation", "Foundations", "Structure", "Envelope", "Fit-out"];
+if (scrub) {
+  const repaint = bindRange(scrub);
+  // EDIT: the app's time span
+  const start = new Date(2025, 0, 1);
+  const end = new Date(2026, 11, 31);
 
-function render(pct) {
-  const date = new Date(+start + ((end - start) * pct) / 100);
-  const label = date.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
-  document.getElementById("progressRing").style.setProperty("--pct", pct);
-  document.getElementById("progressPct").textContent = `${Math.round(pct)}%`;
-  document.getElementById("phase").textContent = phases[Math.min(phases.length - 1, Math.floor(pct / 20))];
-  document.getElementById("elapsed").textContent = `${Math.round((date - start) / dayMs)}d`;
-  document.getElementById("remaining").textContent = `${Math.round((end - date) / dayMs)}d`;
-  document.getElementById("scrubLabel").textContent = label;
-  document.getElementById("dateChip").textContent = label;
+  const render = (pct) => {
+    const date = new Date(+start + ((end - start) * pct) / 100);
+    document.getElementById("scrubLabel").textContent = date.toLocaleDateString(undefined, {
+      year: "numeric",
+      month: "short",
+      day: "numeric"
+    });
+    // Apply the date to the scene here, e.g. view.timeExtent for time-aware layers.
+  };
+  scrub.addEventListener("input", () => render(Number(scrub.value)));
+  render(Number(scrub.value));
+
+  const playBtn = document.getElementById("playBtn");
+  let timer = null;
+  playBtn.addEventListener("click", () => {
+    const playing = timer === null;
+    playBtn.classList.toggle("is-playing", playing);
+    playBtn.setAttribute("aria-pressed", String(playing));
+    playBtn.querySelector(".play-btn__icon").textContent = playing ? "❚❚" : "▶";
+    document.getElementById("playLabel").textContent = playing ? "Pause" : "Play";
+    if (!playing) {
+      clearInterval(timer);
+      timer = null;
+      return;
+    }
+    timer = setInterval(() => {
+      scrub.value = String((Number(scrub.value) + 1) % 101);
+      repaint();
+      render(Number(scrub.value));
+    }, 120);
+  });
 }
-scrub.addEventListener("input", () => render(Number(scrub.value)));
-render(Number(scrub.value));
-
-const playBtn = document.getElementById("playBtn");
-let timer = null;
-playBtn.addEventListener("click", () => {
-  const playing = timer === null;
-  playBtn.classList.toggle("is-playing", playing);
-  playBtn.setAttribute("aria-pressed", String(playing));
-  playBtn.querySelector(".play-btn__icon").textContent = playing ? "❚❚" : "▶";
-  document.getElementById("playLabel").textContent = playing ? "Pause" : "Play";
-  if (!playing) {
-    clearInterval(timer);
-    timer = null;
-    return;
-  }
-  timer = setInterval(() => {
-    scrub.value = String((Number(scrub.value) + 1) % 101);
-    repaint();
-    render(Number(scrub.value));
-  }, 120);
-});

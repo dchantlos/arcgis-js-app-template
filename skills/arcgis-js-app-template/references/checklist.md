@@ -20,7 +20,8 @@ It captures desktop (with and without the welcome dialog), laptop, phone and `?c
 
 ## Layout + scrolling
 - [ ] Panel heads/foots stay pinned; only `.panel__body` scrolls, with the thin accent scrollbar.
-- [ ] Nothing overlaps at 1440×900, 1024×768 and 390×844: top bar, panels, nav stack, dock, FAB stack, attribution.
+- [ ] Nothing overlaps at 1440×900, 1024×768 and 390×844: top bar, panels, nav stack, dock (if any), FAB stack, attribution.
+- [ ] A timeline dock only if the app has time-based data, phases or animation; without one, the FAB stack and phone panel sit at the bottom with no gap.
 - [ ] Every surface uses `.glass` (or the dock's own glass); no stray default-styled widgets.
 
 ## Theme

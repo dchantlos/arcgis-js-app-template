@@ -1,6 +1,6 @@
 ---
 name: arcgis-js-app-template
-description: 'Template for starting custom ArcGIS Maps SDK for JavaScript web apps in the Esri Developers showcase style of the construction-timelapse app: Dev logo top bar and loading screen, dark glass panels with pinned headers and thin scrolling bodies, timeline dock with play button and scrubber, welcome dialog, Help and Resources floating buttons, hover tooltip, layer toggles, ?clean screenshot mode and per-app color themes (cyan, seafoam). Ships a dependency-free CSS/JS kit and a starter page. Use when starting a new custom web app, demo or digital twin from a template, restyling or retrofitting an existing app to this look, adding a panel, control, dialog or floating button, theming an app, or reviewing UI consistency, accessibility and Esri attribution.'
+description: 'Template for starting custom ArcGIS Maps SDK for JavaScript web apps in the Esri Developers showcase style of the construction-timelapse app: Dev logo top bar and loading screen, dark glass panels with pinned headers and thin scrolling bodies, welcome dialog, Help and Resources floating buttons, hover tooltip, layer toggles, ?clean screenshot mode, per-app color themes (cyan, seafoam) and an optional timeline dock (play button and scrubber) for time-based data. Ships a dependency-free CSS/JS kit and a starter page. Use when starting a new custom web app, demo or digital twin from a template, restyling or retrofitting an existing app to this look, adding a panel, control, dialog, floating button or timeline, theming an app, or reviewing UI consistency, accessibility and Esri attribution.'
 license: Apache-2.0
 argument-hint: 'new <app> | retrofit <app> | add <component> | theme <app> | review'
 ---
@@ -34,7 +34,7 @@ Not for SDK API questions (use `build-with-arcgis-maps-sdk-for-javascript` from 
 ## Procedures
 
 ### New app
-1. Confirm app name, theme, target folder and SDK delivery (CDN for single-page demos; Vite when the app needs a build).
+1. Confirm app name, theme, target folder, SDK delivery (CDN for single-page demos; Vite when the app needs a build) and whether the app needs a timeline (time-aware layers, phases or animation). Most apps don't; the timeline dock is off by default.
 2. Copy the kit and starter into the app folder. `KIT` is the `assets/` folder next to this SKILL.md, wherever the skill is installed (for example `~/.copilot/skills/arcgis-js-app-template/assets`):
    ```bash
    KIT="<this skill's folder>/assets"
@@ -44,8 +44,9 @@ Not for SDK API questions (use `build-with-arcgis-maps-sdk-for-javascript` from 
    Swap `theme-cyan.css` for the chosen theme in both the copy and the `<link>`.
 3. Fill every `EDIT` marker in `index.html` and `main.js` (title, veil text, welcome copy, brand title, provenance, help content, resources links).
 4. Replace the `DEMO` parts of `main.js` with the app's WebScene/WebMap, layers and logic; keep the `KIT` parts. For npm/Vite, replace `$arcgis.import()` with `@arcgis/core` imports.
-5. Delete components the app does not need (dock, ring, nav stack…) instead of leaving placeholders.
-6. Validate (below).
+5. Timeline: only if the app needs one, delete the two comment lines around the dock in `index.html` and connect `render()` in the `OPTIONAL` timeline block of `main.js` to the app's time-aware layers. Otherwise delete the commented dock and that block.
+6. Delete components the app does not need (ring, nav stack, flyout…) instead of leaving placeholders.
+7. Validate (below).
 
 ### Retrofit an existing app
 Follow [retrofit.md](./references/retrofit.md): confirm scope and theme → inventory → add kit → map tokens → swap regions one at a time → remove attribution hacks and dead CSS → validate.
@@ -62,7 +63,7 @@ Run [checklist.md](./references/checklist.md) against the running app.
 ## Validation
 1. Serve the app and open it with the client's browser tools, or run `node <this skill's folder>/scripts/screenshots.mjs <url> [outDir]` from the app folder (needs Playwright; see [screenshots.mjs](./scripts/screenshots.mjs)).
 2. Look at every screenshot (desktop + welcome, laptop, phone, `?clean`) and walk the checklist; `report.json` must show `boot: "ready"` and no console issues.
-3. Exercise the interactions: welcome close, Help/Resources, Esc layering, panel collapse, flyout, play/scrubber, hover tooltip + highlight.
+3. Exercise the interactions: welcome close, Help/Resources, Esc layering, panel collapse, flyout, play/scrubber (if the app has the dock), hover tooltip + highlight.
 4. Report anything that could not be verified.
 
 ## Files
@@ -71,7 +72,7 @@ Run [checklist.md](./references/checklist.md) against the running app.
 | [assets/showcase.css](./assets/showcase.css) | Tokens, components, Calcite bridge, `?clean`, responsive, reduced motion |
 | [assets/showcase.js](./assets/showcase.js) | Behaviors: boot veil, view reveal + theme, welcome, panels, flyouts, FABs, float panels, modals, scrubber, nav, tooltip |
 | [assets/theme-cyan.css](./assets/theme-cyan.css), [assets/theme-seafoam.css](./assets/theme-seafoam.css) | Themes |
-| [assets/starter.html](./assets/starter.html), [assets/starter.js](./assets/starter.js) | New-app template with every component wired |
+| [assets/starter.html](./assets/starter.html), [assets/starter.js](./assets/starter.js) | New-app template with every component wired; the timeline dock is commented out (optional) |
 | [assets/dev-logo.png](./assets/dev-logo.png), [assets/esri-logo.png](./assets/esri-logo.png) | Brand assets (keep `dev-logo.png` next to `showcase.css`) |
 | [references/patterns.md](./references/patterns.md) | Component catalog, SDK integration notes, JS API |
 | [references/retrofit.md](./references/retrofit.md) | Step-by-step retrofit + Badouzi mapping |

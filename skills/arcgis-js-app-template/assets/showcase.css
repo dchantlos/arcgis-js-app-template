@@ -1,5 +1,5 @@
 /* =============================================================================
-   Esri Dev Showcase UI kit · v1.0
+   Esri Dev Showcase UI kit · v1.1
    Dark glass panels over a full-bleed ArcGIS view. Extracted from the
    construction-timelapse reference app (dchantlos.github.io/construction-timelapse).
 
@@ -1579,9 +1579,10 @@ body {
   }
 }
 
-/* Below ~900px the centered dock would collide with the FAB stack: lift FABs */
+/* Below ~900px the centered dock would collide with the FAB stack: lift FABs.
+   Only when the app has a dock — it is optional. */
 @media (max-width: 900px) {
-  .fab-stack {
+  body:has(.dock) .fab-stack {
     bottom: calc(var(--safe-bottom) + 84px);
   }
 }
@@ -1604,14 +1605,18 @@ body {
     width: calc(100vw - 2 * var(--edge));
     max-height: 40vh;
   }
-  /* One right panel on phones: it moves above the dock, beside the FAB column */
+  /* One right panel on phones: at the bottom beside the FAB column, above the
+     dock when there is one */
   .panel--right {
     top: auto;
     left: var(--edge);
     right: calc(var(--edge) + 52px);
-    bottom: calc(var(--safe-bottom) + 84px);
+    bottom: var(--safe-bottom);
     width: auto;
     max-height: 28vh;
+  }
+  body:has(.dock) .panel--right {
+    bottom: calc(var(--safe-bottom) + 84px);
   }
   .nav-stack,
   .flyout {
@@ -1628,7 +1633,7 @@ body {
   .fab__label {
     display: none;
   }
-  .fab-stack {
+  body:has(.dock) .fab-stack {
     bottom: calc(var(--safe-bottom) + 76px);
   }
 }

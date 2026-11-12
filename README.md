@@ -1,6 +1,6 @@
 # ArcGIS JS App Template
 
-A template for starting custom web apps with the [ArcGIS Maps SDK for JavaScript](https://developers.arcgis.com/javascript/latest/), packaged as an [agent skill](https://agentskills.io) for GitHub Copilot, Claude Code, Cursor, Codex and other AI coding agents. Ask your agent for a new app and it starts from this template instead of a blank page: Esri Developers branding, a loading screen, dark glass panels, a timeline dock, a welcome dialog, Help and Resources buttons, layer toggles, color themes and a screenshot mode.
+A template for starting custom web apps with the [ArcGIS Maps SDK for JavaScript](https://developers.arcgis.com/javascript/latest/), packaged as an [agent skill](https://agentskills.io) for GitHub Copilot, Claude Code, Cursor, Codex and other AI coding agents. Ask your agent for a new app and it starts from this template instead of a blank page: Esri Developers branding, a loading screen, dark glass panels, a welcome dialog, Help and Resources buttons, layer toggles, color themes, a screenshot mode, and an optional timeline dock for apps with time-based data.
 
 ![The starter app](docs/starter.jpg)
 
@@ -28,11 +28,12 @@ Ask in agent mode, for example:
 
 - "Start a new ArcGIS app from the template for a stadium digital twin, seafoam theme"
 - "Retrofit ./my-app to the template look"
+- "Add the timeline dock for the construction phases"
 - "Add a layer list panel" or "Review the app against the template checklist"
 
 In VS Code you can also type `/arcgis-js-app-template new <app>` (or `retrofit`, `add`, `theme`, `review`).
 
-The agent copies the kit and starter into your project, fills in the `EDIT` placeholders, replaces the demo scene with your web scene or web map, and removes the parts you don't need.
+The agent copies the kit and starter into your project, fills in the `EDIT` placeholders, replaces the demo scene with your web scene or web map, adds the timeline dock only if your app has time-based data, and removes the parts you don't need.
 
 ## Use it without an agent
 
@@ -48,7 +49,7 @@ cp "$KIT/starter.js" my-app/main.js
 cd my-app && python3 -m http.server 8080   # any static server works; ES modules don't load from file://
 ```
 
-Open <http://localhost:8080>. The demo scene needs no API key. Then search `index.html` and `main.js` for `EDIT`, and replace the `DEMO` parts of `main.js` with your own scene. [patterns.md](skills/arcgis-js-app-template/references/patterns.md) lists every component and its JavaScript helper.
+Open <http://localhost:8080>. The demo scene needs no API key. Then search `index.html` and `main.js` for `EDIT`, and replace the `DEMO` parts of `main.js` with your own scene. The timeline dock is off by default; for time-based data, delete the two comment lines around it in `index.html`. [patterns.md](skills/arcgis-js-app-template/references/patterns.md) lists every component and its JavaScript helper.
 
 ## What's inside
 

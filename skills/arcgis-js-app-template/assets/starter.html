@@ -76,18 +76,13 @@
           <span class="tab-link__label">Second view</span>
         </a> -->
       </nav>
-
-      <div class="topbar__status">
-        <span class="dot dot--live" aria-hidden="true"></span>
-        <span id="status">Live</span>
-      </div>
     </header>
 
     <!-- ===================== LEFT DASHBOARD ===================== -->
     <aside class="panel panel--left glass" aria-label="Dashboard">
       <div class="panel__head">
         <h2 class="panel__title">Overview</h2>
-        <span class="chip" id="dateChip">—</span>
+        <span class="chip">Demo data</span>
       </div>
 
       <div class="panel__body">
@@ -103,15 +98,15 @@
             </div>
           </div>
           <div class="ring-card__meta">
-            <span class="kicker">Current phase</span>
-            <strong id="phase">—</strong>
+            <span class="kicker">Sites complete</span>
+            <strong id="completeSummary">—</strong>
           </div>
         </section>
 
         <section class="metrics">
           <div class="metric"><span class="kicker">Layers</span><strong id="layerCount">0</strong></div>
-          <div class="metric"><span class="kicker">Elapsed</span><strong id="elapsed">0d</strong></div>
-          <div class="metric"><span class="kicker">Remaining</span><strong id="remaining">0d</strong></div>
+          <div class="metric"><span class="kicker">Sites</span><strong id="siteCount">0</strong></div>
+          <div class="metric"><span class="kicker">Delayed</span><strong id="delayedCount">0</strong></div>
         </section>
 
         <section class="panel__section">
@@ -155,7 +150,11 @@
       <div class="flyout__widget" id="toolContainer"></div>
     </aside>
 
-    <!-- ===================== BOTTOM DOCK ===================== -->
+    <!-- ===================== TIMELINE DOCK (optional) =====================
+         Only for apps with time-based data, phases or animation. To use it,
+         delete the two comment lines around the footer below; the OPTIONAL
+         block in main.js wires it. -->
+    <!--
     <footer class="dock" aria-label="Timeline">
       <button class="play-btn" type="button" id="playBtn" aria-pressed="false">
         <span class="play-btn__icon" aria-hidden="true">▶</span>
@@ -166,6 +165,7 @@
         <input class="scrub__range" id="scrub" type="range" min="0" max="100" step="1" value="0" aria-label="Timeline" data-range-fill />
       </div>
     </footer>
+    -->
 
     <!-- ===================== HOVER TOOLTIP ===================== -->
     <div class="tooltip glass" id="tooltip" role="tooltip" aria-hidden="true">

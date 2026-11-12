@@ -1,13 +1,13 @@
 # Component patterns
 
-Every component below is already wired in [starter.html](../assets/starter.html) and [starter.js](../assets/starter.js) — copy markup from there. This file lists the classes, the JS helper that drives each component, and the rules that keep apps consistent.
+Every component below is already wired in [starter.html](../assets/starter.html) and [starter.js](../assets/starter.js) — copy markup from there. Optional parts (the timeline dock, a second-page tab) are commented out in starter.html. This file lists the classes, the JS helper that drives each component, and the rules that keep apps consistent.
 
 ## Page skeleton (z-order, bottom → top)
 
 | Layer | Element | Notes |
 |---|---|---|
 | View | `#viewDiv.vignette` or `<arcgis-scene class="sc-view vignette">` | Full-bleed. Vignette is optional. |
-| Chrome | `.topbar`, `.panel--left`, `.panel--right`, `.nav-stack`, `.flyout`, `.dock` | `position: absolute`, always add `.glass` (except `.dock`, which has its own lighter glass). |
+| Chrome | `.topbar`, `.panel--left`, `.panel--right`, `.nav-stack`, `.flyout`, `.dock` (optional) | `position: absolute`, always add `.glass` (except `.dock`, which has its own lighter glass). |
 | Pop-ups | `.tooltip` | Follows the pointer (`createTooltip`). |
 | Floating | `.fab-stack` › `.fab`, `.float-panel` | Bottom-right, above the attribution strip. |
 | Veil | `#boot.boot` | Covers everything until the view is ready. |
@@ -17,7 +17,7 @@ Every component below is already wired in [starter.html](../assets/starter.html)
 
 - `.topbar.glass` › `.brand` (link to `https://developers.arcgis.com/`, `target="_blank" rel="noopener noreferrer"`) › `.brand__logo-wrap` (`.brand__logo` = `dev-logo.png` + `.brand__glow`) + `.brand__text` (`.brand__badge` "Develop with <span class=brand__accent>ArcGIS</span>" + `.brand__title` app name).
 - Optional `.topbar__nav` › `.tab-link` (icon + `.tab-link__label`) to switch between pages of the same app; label hides on phones.
-- `.topbar__status` (with optional `.dot.dot--live`) for one short live status string. Hidden on phones.
+- Optional `.topbar__status` for one short status or location string (e.g. "Taiwan · Keelung"); not in the starter. Add `.dot.dot--live` only when the data really is live. Hidden on phones.
 - Never replace the Dev logo, the "Develop with ArcGIS" badge or its colors per app — they are brand constants.
 
 ## Loading veil
@@ -39,7 +39,7 @@ Every component below is already wired in [starter.html](../assets/starter.html)
 ```
 
 - Only `.panel__body` scrolls (thin accent scrollbar, `overscroll-behavior: contain`). Head and foot stay pinned. Never make the whole panel scroll.
-- `.panel--left` (368 px dashboard) and `.panel--right` (216 px list). On phones the left panel becomes full width (40 vh) and one right panel moves above the dock.
+- `.panel--left` (368 px dashboard) and `.panel--right` (216 px list). On phones the left panel becomes full width (40 vh) and one right panel moves to the bottom (above the dock, if there is one).
 - With a `.nav-stack`, the right panel is capped to end above it; set `--nav-stack-h` if the stack has more than 4 buttons.
 - Collapse: add `button.panel-collapse[data-panel-toggle]` in the head; `initShowcase()` wires it (`+`/`–`, `aria-expanded`). Start collapsed with `.is-collapsed`.
 - Content primitives: `.panel__section` (+ `.panel__section-head`), `.kicker` (section label), `.panel__note` (help text), `.chip` / `.chip--sm` / `.chip--danger`, `.accent-text`, `.btn-ghost` ("Reset").
@@ -54,15 +54,17 @@ Every component below is already wired in [starter.html](../assets/starter.html)
 - Host SDK tools as **components** (`arcgis-slice`, measurement components) — widgets are deprecated in 5.x. `.flyout .esri-widget` is made transparent so legacy widgets blend in.
 - Remove default view UI (`ui: { components: [] }` or component attributes) and use the nav stack instead. Hidden on phones (pinch/drag instead).
 
-## Bottom dock
+## Timeline dock (optional)
 
+- Only for apps with time-based data, phases or animation; most apps don't need it. It is commented out in starter.html: delete the two comment lines around it and the `OPTIONAL` timeline block in starter.js wires it (the block does nothing when the dock is absent).
 - `footer.dock` › `button.play-btn` (`.play-btn__icon` + label; toggle `.is-playing` + `aria-pressed`) + `.scrub` › `.scrub__label` + `input.scrub__range[type=range][data-range-fill]`.
 - The filled track is CSS (`--fill`). After changing `input.value` in code, call the repaint function returned by `bindRange(input)`.
 - If an SDK TimeSlider drives time-aware layers headlessly, keep its container hidden and drive it from the scrubber (construction-timelapse pattern).
+- With a dock, the FAB stack (below 900 px) and the phone right panel lift above it automatically (`body:has(.dock)`); without one they sit on `--safe-bottom`.
 
 ## Floating buttons, help window, resources modal
 
-- `.fab-stack` (bottom-right) holds every floating button; never position FABs individually. Order = DOM order (top → bottom). It lifts above the dock below 900 px.
+- `.fab-stack` (bottom-right) holds every floating button; never position FABs individually. Order = DOM order (top → bottom). Below 900 px it lifts above the dock when there is one.
 - Help/guide/assistant: `createFloatPanel({ title, label, icon, content, prepend })` adds a `.fab` and a draggable `.float-panel` (Esc closes, focus returns to the FAB). Use `.accordion__item` › `button.accordion__q` (+ `.accordion__chev`) + `.accordion__a` for Q&A content.
 - Resources: static `.fab#resourcesFab` + `.modal#resources[hidden]` › `.modal__panel` (head with `.modal__icon`, `.modal__titles`, `.modal__close[data-modal-close]`) › `.modal__group` › `a.link-card` (`.link-card__badge`, `__body`, `__title`, `__desc`, `svg.link-card__arrow`). Wire with `createModal("#resources", { trigger: "#resourcesFab" })`.
 - Optional `a.esri-badge.glass` ("Powered by Esri") goes last inside `.fab-stack`. It does **not** replace the SDK attribution.

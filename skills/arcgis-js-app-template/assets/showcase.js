@@ -1,5 +1,5 @@
 // =============================================================================
-// Esri Dev Showcase UI kit · v1.0 — behaviors for showcase.css
+// Esri Dev Showcase UI kit · v1.1 — behaviors for showcase.css
 // Dependency-free ES module. Works with Core API views (SceneView/MapView) and
 // with <arcgis-scene>/<arcgis-map> components. HTML passed to these helpers
 // (icons, panel content) must be trusted, authored markup — never user input.
