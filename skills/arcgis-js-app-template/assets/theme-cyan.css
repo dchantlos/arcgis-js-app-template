@@ -1,0 +1,36 @@
+/* =============================================================================
+   Theme · Cyan (construction / BIM / AEC) — the construction-timelapse palette.
+   Load after showcase.css. Only theme tokens belong here; brand constants,
+   layout and components stay in showcase.css.
+   ============================================================================= */
+:root {
+  --bg: #060912;
+  --veil-bg: #05070e;
+  --glass: rgba(6, 9, 16, 0.66);
+  --glass-strong: rgba(4, 6, 12, 0.85);
+  --glass-lite: rgba(14, 18, 32, 0.55);
+  --glass-border: rgba(140, 170, 230, 0.18);
+  --glass-border-soft: rgba(140, 170, 230, 0.1);
+  --text: #e8eefc;
+  --text-dim: #c2cfee;
+  --text-faint: #aab6d4;
+  --label: #d1d5db;
+  --accent: #38e2ea; /* neon cyan */
+  --accent-rgb: 56, 226, 234;
+  --accent-bright: #48dfe5;
+  --accent-bright-rgb: 72, 223, 229;
+  --accent-2: #7c5cff; /* violet */
+  --accent-2-rgb: 124, 92, 255;
+  --accent-3: #4ade80; /* mint status */
+  --danger: #fb7185;
+  --danger-rgb: 251, 113, 133;
+  --on-accent: #04121a;
+  --track: #2a3142;
+  --vignette: rgba(2, 4, 10, 0.55);
+  --surface-1: #0a0f19;
+  --surface-2: #0f1522;
+  --surface-3: #151c2b;
+  --surface-4: #1b2334;
+  --radius: 18px;
+  --blur: 22px;
+}

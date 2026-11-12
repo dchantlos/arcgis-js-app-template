@@ -1,0 +1,1740 @@
+/* =============================================================================
+   Esri Dev Showcase UI kit · v1.0
+   Dark glass panels over a full-bleed ArcGIS view. Extracted from the
+   construction-timelapse reference app (dchantlos.github.io/construction-timelapse).
+
+   Load order : SDK CSS (Core API views only) → showcase.css → theme-*.css → app CSS
+   Theming    : override tokens only (see theme-*.css). Components never hard-code
+                accent colors — use var(--accent) or rgba(var(--accent-rgb), a).
+   Assets     : dev-logo.png must sit next to this file (boot pulse mask).
+   Prefixes   : keyframes use "sc-" so they never collide with app keyframes.
+   ============================================================================= */
+
+/* ---------- Tokens ---------------------------------------------------------- */
+:root {
+  /* Theme tokens — override per app in theme-*.css */
+  --bg: #060912;
+  --veil-bg: #05070e;
+  --glass: rgba(6, 9, 16, 0.66);
+  --glass-strong: rgba(4, 6, 12, 0.85);
+  --glass-lite: rgba(14, 18, 32, 0.55);
+  --glass-border: rgba(140, 170, 230, 0.18);
+  --glass-border-soft: rgba(140, 170, 230, 0.1);
+  --text: #e8eefc;
+  --text-dim: #c2cfee; /* WCAG AA on glass */
+  --text-faint: #aab6d4;
+  --label: #d1d5db;
+  --accent: #38e2ea;
+  --accent-rgb: 56, 226, 234;
+  --accent-bright: #48dfe5;
+  --accent-bright-rgb: 72, 223, 229;
+  --accent-2: #7c5cff;
+  --accent-2-rgb: 124, 92, 255;
+  --accent-3: #4ade80;
+  --danger: #fb7185;
+  --danger-rgb: 251, 113, 133;
+  --on-accent: #04121a;
+  --track: #2a3142;
+  --vignette: rgba(2, 4, 10, 0.55);
+  --surface-1: #0a0f19;
+  --surface-2: #0f1522;
+  --surface-3: #151c2b;
+  --surface-4: #1b2334;
+  --radius: 18px;
+  --blur: 22px;
+  --shadow: 0 24px 60px -24px rgba(0, 0, 0, 0.85);
+  --glow: 0 0 8px rgba(var(--accent-bright-rgb), 0.4);
+
+  /* Brand constants — identical in every app, never themed */
+  --esri-blue: #0079c1;
+  --esri-blue-rgb: 0, 121, 193;
+  --dev-blue: #2e9bd6;
+  --dev-blue-hover: #46b4ec;
+  --dev-violet-rgb: 169, 123, 244;
+  --font: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+
+  /* Layout */
+  --edge: 18px;
+  --topbar-h: 64px;
+  --content-top: calc(var(--edge) + var(--topbar-h) + 16px);
+  --safe-bottom: 24px; /* keeps bottom UI clear of the SDK attribution strip */
+  --panel-w: 368px;
+  --panel-w-sm: 216px;
+  --nav-stack-h: 208px; /* 4 nav buttons; adjust if the stack has more/fewer */
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --z-ui: 10;
+  --z-panel: 11;
+  --z-flyout: 12;
+  --z-pop: 20;
+  --z-fab: 45;
+  --z-float: 46;
+  --z-veil: 50;
+  --z-modal: 70;
+}
+
+/* ---------- Base ------------------------------------------------------------ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Dark native controls + Calcite dark mode */
+:root {
+  color-scheme: dark;
+}
+
+:where(button, input, select, textarea) {
+  font: inherit;
+}
+
+#viewDiv,
+.sc-view {
+  position: absolute;
+  inset: 0;
+}
+
+/* Opt-in edge vignette over the map/scene */
+.vignette::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: radial-gradient(120% 90% at 50% 18%, transparent 55%, var(--vignette) 100%);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---------- Glass surface + text primitives -------------------------------- */
+.glass {
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(var(--blur)) saturate(140%);
+  backdrop-filter: blur(var(--blur)) saturate(140%);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+.glass--strong {
+  background: var(--glass-strong);
+}
+
+.kicker {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--label);
+}
+
+.accent-text {
+  color: var(--accent-bright);
+  text-shadow: var(--glow);
+}
+
+/* Glowing live value chip (e.g. the current timeline date) */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 11px;
+  border-radius: 999px;
+  background: rgba(var(--accent-rgb), 0.1);
+  border: 1px solid rgba(var(--accent-rgb), 0.3);
+  color: var(--accent-bright);
+  text-shadow: var(--glow);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  font-variant-numeric: tabular-nums;
+}
+.chip--sm {
+  padding: 2px 9px;
+  font-size: 11px;
+}
+.chip--danger {
+  background: rgba(var(--danger-rgb), 0.1);
+  border-color: rgba(var(--danger-rgb), 0.35);
+  color: var(--danger);
+  text-shadow: none;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-faint);
+}
+.dot--live {
+  background: var(--accent-3);
+  box-shadow: 0 0 10px var(--accent-3);
+  animation: sc-blink 1.8s ease-in-out infinite;
+}
+
+/* ---------- Scrolling: one thin accent scrollbar everywhere ----------------- */
+.scroll-thin,
+.panel__body,
+.float-panel__body,
+.modal__panel,
+.toggle-list {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(var(--accent-rgb), 0.4) transparent;
+}
+.scroll-thin::-webkit-scrollbar,
+.panel__body::-webkit-scrollbar,
+.float-panel__body::-webkit-scrollbar,
+.modal__panel::-webkit-scrollbar,
+.toggle-list::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.scroll-thin::-webkit-scrollbar-thumb,
+.panel__body::-webkit-scrollbar-thumb,
+.float-panel__body::-webkit-scrollbar-thumb,
+.modal__panel::-webkit-scrollbar-thumb,
+.toggle-list::-webkit-scrollbar-thumb {
+  background: rgba(var(--accent-rgb), 0.35);
+  border-radius: 999px;
+}
+.scroll-thin::-webkit-scrollbar-track,
+.panel__body::-webkit-scrollbar-track,
+.float-panel__body::-webkit-scrollbar-track,
+.modal__panel::-webkit-scrollbar-track,
+.toggle-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* ---------- Boot veil (loading screen) -------------------------------------- */
+.boot {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-veil);
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 22px;
+  padding: 24px;
+  background: var(--veil-bg);
+  transition: opacity 0.6s ease, visibility 0.6s ease;
+}
+.boot.is-hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+.boot__mark {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  display: grid;
+  place-items: center;
+}
+.boot__logo {
+  position: relative;
+  z-index: 1;
+  width: 96px;
+  height: 96px;
+  animation: sc-boot-glow 2s ease-in-out infinite;
+}
+/* Blue silhouette of the logo (mask) so the pulse hugs the squircle shape */
+.boot__pulse {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: var(--esri-blue);
+  -webkit-mask: url(./dev-logo.png) center / contain no-repeat;
+  mask: url(./dev-logo.png) center / contain no-repeat;
+  animation: sc-pulse 1.9s ease-out infinite;
+}
+.boot__text {
+  max-width: min(560px, 90vw);
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  line-height: 1.5;
+  text-align: center;
+  color: var(--text-dim);
+}
+.boot__dots::after {
+  content: "";
+  animation: sc-dots 1.4s steps(4, end) infinite;
+}
+.boot__retry {
+  display: none;
+}
+.boot.is-error .boot__logo {
+  animation: none;
+  filter: grayscale(0.4);
+}
+.boot.is-error .boot__pulse {
+  background: var(--danger);
+  opacity: 0.35;
+  transform: scale(1.15);
+  animation: none;
+}
+.boot.is-error .boot__text {
+  letter-spacing: 0.02em;
+  color: #fecdd3;
+}
+.boot.is-error .boot__dots {
+  display: none;
+}
+.boot.is-error .boot__retry {
+  display: inline-flex;
+}
+
+/* ---------- Top bar + Esri Developers brand --------------------------------- */
+.topbar {
+  position: absolute;
+  top: var(--edge);
+  left: var(--edge);
+  right: var(--edge);
+  z-index: var(--z-ui);
+  height: var(--topbar-h);
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.topbar__nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.topbar__status {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  color: var(--accent-bright);
+  text-shadow: var(--glow);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  min-width: 0;
+  text-decoration: none;
+  color: inherit;
+}
+.brand__logo-wrap {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+  border-radius: 12px;
+}
+.brand__logo {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  transition: transform 0.45s var(--ease);
+}
+.brand__glow {
+  position: absolute;
+  inset: -2px;
+  z-index: 0;
+  border-radius: 13px;
+  background: var(--esri-blue);
+  filter: blur(15px);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.brand:hover .brand__logo,
+.brand:focus-visible .brand__logo {
+  transform: scale(1.07);
+}
+.brand:hover .brand__glow,
+.brand:focus-visible .brand__glow {
+  opacity: 0.6;
+}
+.brand:focus-visible {
+  outline: 2px solid rgba(var(--accent-bright-rgb), 0.8);
+  outline-offset: 4px;
+  border-radius: 12px;
+}
+.brand__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  line-height: 1.15;
+}
+.brand__badge {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.005em;
+  color: #e6ecff;
+}
+.brand__accent {
+  font-weight: 700;
+  color: var(--dev-blue);
+  transition: color 0.3s ease;
+}
+.brand:hover .brand__accent {
+  color: var(--dev-blue-hover);
+}
+.brand__title {
+  overflow: hidden;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-dim);
+}
+
+/* Page-switch pill (e.g. planned schedule ↔ current progress) */
+.tab-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(46, 155, 214, 0.55);
+  background: linear-gradient(135deg, rgba(var(--esri-blue-rgb), 0.32), rgba(var(--dev-violet-rgb), 0.2));
+  box-shadow: 0 0 18px -8px rgba(var(--esri-blue-rgb), 0.6);
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-decoration: none;
+  white-space: nowrap;
+  color: var(--text);
+  transition: all 0.22s ease;
+}
+.tab-link:hover {
+  border-color: var(--dev-blue-hover);
+  box-shadow: 0 0 22px -4px rgba(46, 155, 214, 0.7);
+  transform: translateY(-1px);
+}
+.tab-link:active {
+  transform: translateY(0) scale(0.98);
+}
+.tab-link:focus-visible {
+  outline: 2px solid rgba(var(--accent-bright-rgb), 0.8);
+  outline-offset: 2px;
+}
+.tab-link__icon {
+  font-size: 14px;
+  filter: drop-shadow(0 0 6px rgba(46, 155, 214, 0.85));
+}
+
+/* ---------- Buttons --------------------------------------------------------- */
+/* Primary call-to-action: Esri blue → Dev violet glow pill */
+.btn-glow,
+.welcome__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border-radius: 999px;
+  border: 1px solid rgba(46, 155, 214, 0.55);
+  background: linear-gradient(135deg, rgba(var(--esri-blue-rgb), 0.42), rgba(var(--dev-violet-rgb), 0.3));
+  box-shadow: 0 12px 30px -12px rgba(var(--esri-blue-rgb), 0.7), 0 0 18px -6px rgba(var(--accent-bright-rgb), 0.5);
+  font: 700 14px/1 var(--font);
+  letter-spacing: 0.02em;
+  color: #eaf6ff;
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+.btn-glow:hover,
+.welcome__btn:hover {
+  transform: translateY(-1px);
+  border-color: var(--dev-blue-hover);
+  box-shadow: 0 14px 34px -10px rgba(var(--esri-blue-rgb), 0.85), 0 0 26px -4px rgba(var(--accent-bright-rgb), 0.75);
+}
+.btn-glow:active,
+.welcome__btn:active {
+  transform: translateY(0) scale(0.98);
+}
+.btn-glow:focus-visible,
+.welcome__btn:focus-visible {
+  outline: 2px solid rgba(var(--accent-bright-rgb), 0.8);
+  outline-offset: 2px;
+}
+
+/* Small square accent button: collapse toggles, close buttons in panels */
+.panel-collapse {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  border-radius: 7px;
+  border: 1px solid rgba(var(--accent-rgb), 0.28);
+  background: rgba(var(--accent-rgb), 0.08);
+  font-size: 15px;
+  line-height: 1;
+  color: var(--accent-bright);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.panel-collapse:hover {
+  border-color: var(--accent);
+  background: rgba(var(--accent-rgb), 0.18);
+  box-shadow: 0 0 12px -4px var(--accent);
+}
+.panel-collapse:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Text button for secondary actions inside panels (e.g. "Reset") */
+.btn-ghost {
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.04);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.btn-ghost:hover {
+  border-color: var(--accent);
+  color: var(--accent-bright);
+}
+.btn-ghost:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ---------- Panels: pinned head, scrolling body ----------------------------- */
+.panel {
+  position: absolute;
+  z-index: var(--z-panel);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+  max-height: calc(100vh - var(--content-top) - 20px);
+  max-height: calc(100dvh - var(--content-top) - 20px);
+  padding: 16px 20px;
+}
+.panel--left {
+  top: var(--content-top);
+  left: var(--edge);
+  width: var(--panel-w);
+}
+.panel--right {
+  top: var(--content-top);
+  right: var(--edge);
+  width: var(--panel-w-sm);
+  padding: 16px;
+}
+.panel__head {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.panel__title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--label);
+}
+/* The body scrolls; the scrollbar sits in the panel's padding gutter */
+.panel__body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+  margin-right: -12px;
+  padding-right: 12px;
+}
+.panel__foot {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--glass-border-soft);
+}
+.panel.is-collapsed {
+  max-height: none;
+}
+.panel.is-collapsed .panel__body,
+.panel.is-collapsed .panel__foot {
+  display: none;
+}
+.panel__section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.panel__section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.panel__note {
+  margin: 0;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--text-faint);
+}
+
+/* ---------- Dashboard primitives -------------------------------------------- */
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.metric {
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid var(--glass-border-soft);
+  background: rgba(255, 255, 255, 0.035);
+}
+.metric strong {
+  display: block;
+  margin-top: 6px;
+  font-size: 18px;
+  font-variant-numeric: tabular-nums;
+}
+.metric strong.is-bad {
+  color: var(--danger);
+  text-shadow: 0 0 12px rgba(var(--danger-rgb), 0.4);
+}
+
+/* Progress ring card: set --pct (0–100) on .ring */
+.ring-card {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid var(--glass-border-soft);
+  background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.08), rgba(var(--accent-2-rgb), 0.06));
+}
+.ring {
+  --pct: 0;
+  position: relative;
+  flex-shrink: 0;
+  width: 96px;
+  height: 96px;
+}
+.ring svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+.ring__bg {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.08);
+  stroke-width: 9;
+}
+.ring__bar {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 9;
+  stroke-linecap: round;
+  stroke-dasharray: 327; /* 2πr, r = 52 */
+  stroke-dashoffset: calc(327 - 327 * var(--pct) / 100);
+  filter: drop-shadow(0 0 6px rgba(var(--accent-rgb), 0.6));
+  transition: stroke-dashoffset 0.6s var(--ease);
+}
+.ring__label {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  text-align: center;
+}
+.ring__label span {
+  font-size: 22px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.ring__label small {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--label);
+}
+.ring-card__meta strong {
+  display: block;
+  margin-top: 4px;
+  font-size: 15px;
+  line-height: 1.25;
+}
+
+/* ---------- Toggle list + switch (layer visibility) ------------------------- */
+.toggle-list {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 11px;
+  border-radius: 11px;
+  border: 1px solid transparent;
+  background: rgba(255, 255, 255, 0.025);
+  font-size: 12.5px;
+  transition: all 0.25s ease;
+}
+.toggle-row:hover {
+  border-color: rgba(var(--accent-rgb), 0.25);
+  background: rgba(var(--accent-rgb), 0.1);
+}
+.toggle-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-dim);
+}
+.switch {
+  position: relative;
+  flex-shrink: 0;
+  width: 34px;
+  height: 18px;
+  cursor: pointer;
+}
+.switch input {
+  position: absolute;
+  width: 0;
+  height: 0;
+  opacity: 0;
+}
+.switch .track {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  border: 1px solid var(--glass-border-soft);
+  background: rgba(255, 255, 255, 0.12);
+  transition: all 0.25s ease;
+}
+.switch .track::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--text-faint);
+  transition: all 0.25s var(--ease);
+}
+.switch input:checked + .track {
+  border-color: var(--accent);
+  background: rgba(var(--accent-rgb), 0.32);
+  box-shadow: 0 0 14px -4px var(--accent);
+}
+.switch input:checked + .track::after {
+  left: 18px;
+  background: var(--accent);
+  box-shadow: var(--glow);
+}
+.switch input:focus-visible + .track {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ---------- Right-side nav stack + tool flyout ------------------------------ */
+.nav-stack {
+  position: absolute;
+  top: 50%;
+  right: var(--edge);
+  z-index: var(--z-ui);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+  transform: translateY(-50%);
+}
+.nav-btn {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  border: 1px solid var(--glass-border-soft);
+  background: rgba(255, 255, 255, 0.04);
+  font-size: 18px;
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.nav-btn svg {
+  width: 18px;
+  height: 18px;
+}
+.nav-btn:hover,
+.nav-btn.is-active,
+.nav-btn[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: rgba(var(--accent-rgb), 0.16);
+  color: var(--accent);
+  box-shadow: 0 0 18px -4px var(--accent);
+}
+.nav-btn:active {
+  transform: scale(0.94);
+}
+.nav-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Tool panel that slides out beside the nav stack (slice, measure, …) */
+.flyout {
+  position: absolute;
+  top: 50%;
+  right: calc(var(--edge) + 66px);
+  z-index: var(--z-flyout);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 262px;
+  max-height: calc(100vh - 2 * var(--content-top));
+  padding: 16px;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(-50%) translateX(12px);
+  transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s ease;
+}
+.flyout.is-open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(-50%) translateX(0);
+}
+.flyout__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.flyout__hint {
+  margin: 0;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--text-faint);
+}
+.flyout__widget {
+  overflow: hidden;
+  border-radius: 12px;
+}
+
+/* Blend SDK widgets/components hosted inside kit surfaces */
+.panel .esri-widget,
+.flyout .esri-widget,
+.float-panel .esri-widget {
+  background: transparent;
+  box-shadow: none;
+  color: var(--text-dim);
+}
+
+/* ---------- Bottom dock: play button + scrubber ----------------------------- */
+.dock {
+  position: absolute;
+  bottom: var(--safe-bottom);
+  left: 50%;
+  z-index: var(--z-ui);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: min(560px, calc(100vw - 48px));
+  padding: 14px 18px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--glass-lite);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 12px 40px -12px rgba(0, 0, 0, 0.7);
+  transform: translateX(-50%);
+}
+.play-btn {
+  position: relative;
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 11px;
+  overflow: hidden;
+  padding: 12px 20px;
+  border-radius: 14px;
+  border: 1px solid rgba(var(--accent-2-rgb), 0.45);
+  background: linear-gradient(135deg, rgba(var(--accent-2-rgb), 0.22), rgba(var(--accent-rgb), 0.14));
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+.play-btn:hover {
+  box-shadow: 0 0 26px -6px var(--accent-2);
+  transform: translateY(-1px);
+}
+.play-btn.is-playing,
+.play-btn[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.28), rgba(var(--accent-2-rgb), 0.18));
+  box-shadow: 0 0 26px -6px var(--accent);
+}
+.play-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.play-btn__icon {
+  font-size: 12px;
+}
+.scrub {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+.scrub__label {
+  align-self: center;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent-bright);
+  text-shadow: 0 0 10px rgba(var(--accent-bright-rgb), 0.55);
+}
+/* Filled track is driven by --fill (set by bindRange() in showcase.js) */
+.scrub__range {
+  width: 100%;
+  height: 6px;
+  margin: 0;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--accent-bright) 0 var(--fill, 0%), var(--track) var(--fill, 0%) 100%);
+  outline: none;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.scrub__range::-webkit-slider-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid #0b0f1a;
+  background: var(--accent-bright);
+  box-shadow: 0 0 12px var(--accent-bright), 0 0 4px var(--accent-bright);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.scrub__range::-webkit-slider-thumb:hover {
+  transform: scale(1.18);
+  box-shadow: 0 0 18px var(--accent-bright), 0 0 6px var(--accent-bright);
+}
+.scrub__range::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid #0b0f1a;
+  background: var(--accent-bright);
+  box-shadow: 0 0 12px var(--accent-bright), 0 0 4px var(--accent-bright);
+}
+.scrub__range::-moz-range-track {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--track);
+}
+.scrub__range::-moz-range-progress {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--accent-bright);
+}
+.scrub__range:focus-visible {
+  outline: 2px solid rgba(var(--accent-bright-rgb), 0.8);
+  outline-offset: 4px;
+}
+
+/* ---------- Floating buttons (bottom-right stack) --------------------------- */
+.fab-stack {
+  position: fixed;
+  right: var(--edge);
+  bottom: var(--safe-bottom);
+  z-index: var(--z-fab);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  pointer-events: none;
+}
+.fab-stack > * {
+  pointer-events: auto;
+}
+.fab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 15px;
+  border-radius: 999px;
+  border: 1px solid rgba(var(--accent-bright-rgb), 0.42);
+  background: rgba(14, 18, 32, 0.66);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 10px 30px -12px rgba(0, 0, 0, 0.7), 0 0 18px -6px rgba(var(--accent-bright-rgb), 0.6);
+  font: 600 13px/1 var(--font);
+  letter-spacing: 0.01em;
+  color: var(--text);
+  cursor: pointer;
+  transition: opacity 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.fab:hover {
+  border-color: rgba(var(--accent-bright-rgb), 0.72);
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.8), 0 0 26px -4px rgba(var(--accent-bright-rgb), 0.9);
+  transform: translateY(-1px);
+}
+.fab:focus-visible {
+  outline: 2px solid rgba(var(--accent-bright-rgb), 0.8);
+  outline-offset: 2px;
+}
+.fab.is-hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(8px);
+}
+.fab svg {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+}
+.fab__icon {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(var(--accent-bright-rgb), 0.92);
+  box-shadow: 0 0 8px rgba(var(--accent-bright-rgb), 0.7);
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--on-accent);
+}
+.fab__icon:has(svg) {
+  background: none;
+  box-shadow: none;
+  color: var(--accent-bright);
+}
+
+/* Optional "Powered by Esri" chip; place it last inside .fab-stack */
+.esri-badge {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 12px 7px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  color: var(--text-dim);
+  transition: all 0.2s ease;
+}
+.esri-badge:hover {
+  border-color: var(--accent);
+  box-shadow: var(--shadow), 0 0 18px -6px var(--accent);
+  color: var(--text);
+  transform: translateY(-1px);
+}
+.esri-badge img {
+  display: block;
+  padding: 3px;
+  border-radius: 7px;
+  background: #fff;
+}
+
+/* ---------- Floating window (help, assistant, inspector) -------------------- */
+.float-panel {
+  position: fixed;
+  right: var(--edge);
+  bottom: var(--safe-bottom);
+  z-index: var(--z-float);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  width: min(360px, calc(100vw - 2 * var(--edge)));
+  max-height: min(70vh, 560px);
+  border-radius: 16px;
+  border: 1px solid rgba(var(--accent-bright-rgb), 0.28);
+  background: rgba(14, 18, 32, 0.88);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  backdrop-filter: blur(16px) saturate(140%);
+  box-shadow: 0 22px 60px -18px rgba(0, 0, 0, 0.85), 0 0 30px -10px rgba(var(--accent-bright-rgb), 0.4);
+  color: var(--text);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(10px);
+  transition: opacity 0.22s ease, transform 0.22s ease, visibility 0s linear 0.22s;
+}
+.float-panel.is-open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: none;
+  transition: opacity 0.22s ease, transform 0.22s ease, visibility 0s;
+}
+.float-panel.is-dragging {
+  box-shadow: 0 26px 64px -14px rgba(0, 0, 0, 0.9), 0 0 36px -8px rgba(var(--accent-bright-rgb), 0.55);
+  transition: none;
+}
+.float-panel__head {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(180deg, rgba(var(--accent-rgb), 0.08), transparent);
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+}
+.float-panel__head:active {
+  cursor: grabbing;
+}
+.float-panel__title {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--accent-bright);
+  text-shadow: 0 0 10px rgba(var(--accent-bright-rgb), 0.45);
+}
+.float-panel__close {
+  padding: 2px 6px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  font-size: 14px;
+  color: var(--text-faint);
+  cursor: pointer;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+.float-panel__close:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+.float-panel__close:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+.float-panel__body {
+  padding: 12px 14px 14px;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--text-dim);
+}
+
+/* Accordion (help Q&A, grouped settings) */
+.accordion__item {
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+.accordion__item:first-child {
+  border-top: none;
+}
+.accordion__q {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 2px;
+  border: none;
+  background: transparent;
+  font: 600 13px/1.3 var(--font);
+  text-align: left;
+  color: var(--text);
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+.accordion__q:hover {
+  color: var(--accent-bright);
+}
+.accordion__q:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+.accordion__chev {
+  flex-shrink: 0;
+  font-size: 13px;
+  color: var(--accent-bright);
+  transition: transform 0.2s ease;
+}
+.accordion__item.is-open .accordion__chev {
+  transform: rotate(180deg);
+}
+.accordion__a {
+  max-height: 0;
+  overflow: hidden;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--text-dim);
+  transition: max-height 0.25s ease, padding 0.25s ease;
+}
+.accordion__item.is-open .accordion__a {
+  max-height: 460px;
+  padding: 0 2px 11px;
+}
+.accordion__a ul {
+  margin: 6px 0 0;
+  padding-left: 18px;
+}
+.accordion__a strong {
+  font-weight: 700;
+  color: var(--text);
+}
+
+/* ---------- Welcome dialog (shown over the boot veil while the scene loads) -- */
+.welcome {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+.welcome[hidden] {
+  display: none;
+}
+.welcome__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(2, 6, 23, 0.68);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+.welcome__panel {
+  position: relative;
+  width: min(560px, calc(100vw - 48px));
+  padding: 32px 34px 28px;
+  border-radius: 20px;
+  text-align: center;
+  animation: sc-welcome-in 0.42s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+.welcome.is-closing .welcome__panel {
+  animation: sc-welcome-out 0.24s ease forwards;
+}
+.welcome.is-closing .welcome__backdrop {
+  opacity: 0;
+  transition: opacity 0.24s ease;
+}
+.welcome__badge {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--accent-bright);
+  text-shadow: var(--glow);
+}
+.welcome__title {
+  margin: 10px 0 0;
+  font-size: clamp(25px, 3.2vw, 33px);
+  font-weight: 800;
+  line-height: 1.12;
+  letter-spacing: -0.015em;
+  color: #fff;
+}
+.welcome__made {
+  margin: 12px 0 0;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-dim);
+}
+.welcome__made strong {
+  font-weight: 700;
+  color: var(--accent-bright);
+}
+.welcome__desc {
+  max-width: 46ch;
+  margin: 16px auto 0;
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--text-faint);
+}
+.welcome__btn {
+  margin-top: 26px;
+}
+.welcome__esri {
+  display: block;
+  width: 140px;
+  height: auto;
+  margin: 24px auto 0;
+  opacity: 0.95;
+}
+
+/* ---------- Modal (resources, details, confirmations) ----------------------- */
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: calc(var(--z-modal) + 10);
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+.modal[hidden] {
+  display: none;
+}
+.modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(3, 5, 12, 0.66);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  animation: sc-fade 0.2s ease;
+}
+.modal__panel {
+  position: relative;
+  width: min(560px, 100%);
+  max-height: min(82vh, 660px);
+  padding: 22px 22px 24px;
+  border-radius: 18px;
+  border: 1px solid rgba(var(--accent-bright-rgb), 0.26);
+  background: linear-gradient(160deg, rgba(13, 18, 30, 0.97), rgba(6, 9, 16, 0.97));
+  box-shadow: 0 30px 80px -24px rgba(0, 0, 0, 0.8), 0 0 60px -30px rgba(var(--accent-bright-rgb), 0.5);
+  animation: sc-pop 0.26s var(--ease);
+}
+.modal__head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+.modal__icon {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  border: 1px solid rgba(var(--accent-bright-rgb), 0.3);
+  background: rgba(var(--accent-bright-rgb), 0.1);
+  color: var(--accent-bright);
+}
+.modal__icon svg {
+  width: 20px;
+  height: 20px;
+}
+.modal__titles {
+  flex: 1;
+  min-width: 0;
+}
+.modal__title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #eaf3f5;
+}
+.modal__sub {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: var(--text-faint);
+}
+.modal__close {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  font-size: 13px;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+.modal__close:hover {
+  border-color: rgba(var(--danger-rgb), 0.4);
+  background: rgba(var(--danger-rgb), 0.14);
+  color: #fff;
+}
+.modal__close:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.modal__group {
+  margin-top: 18px;
+}
+.modal__group-label {
+  margin-bottom: 8px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+/* Link card (resources list) */
+.link-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.025);
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+.link-card:last-child {
+  margin-bottom: 0;
+}
+.link-card:hover {
+  border-color: rgba(var(--accent-bright-rgb), 0.32);
+  background: rgba(var(--accent-bright-rgb), 0.09);
+  transform: translateX(2px);
+}
+.link-card:focus-visible {
+  outline: 2px solid rgba(var(--accent-bright-rgb), 0.8);
+  outline-offset: 2px;
+}
+.link-card__badge {
+  flex-shrink: 0;
+  align-self: flex-start;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--accent-bright);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--on-accent);
+}
+.link-card__body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.link-card__title {
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--text);
+}
+.link-card__desc {
+  font-size: 11.5px;
+  color: var(--text-faint);
+}
+.link-card__arrow {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  color: var(--text-faint);
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+.link-card:hover .link-card__arrow {
+  color: var(--accent-bright);
+  transform: translate(1px, -1px);
+}
+
+/* ---------- Hit-test tooltip ------------------------------------------------ */
+.tooltip {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: var(--z-pop);
+  min-width: 220px;
+  max-width: 320px;
+  padding: 16px 18px;
+  border-radius: 14px;
+  border: 1px solid rgba(var(--accent-rgb), 0.4);
+  box-shadow: var(--shadow), 0 0 30px -8px var(--accent);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(8px) scale(0.96);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+.tooltip.is-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+.tooltip__tag {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid rgba(var(--accent-rgb), 0.3);
+  background: rgba(var(--accent-rgb), 0.12);
+  font-size: 9.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.tooltip__title {
+  margin: 10px 0 12px;
+  font-size: 16px;
+}
+.tooltip__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 0;
+  border-top: 1px solid var(--glass-border-soft);
+  font-size: 12px;
+  color: var(--text-dim);
+}
+.tooltip__row strong {
+  color: var(--text);
+}
+.tooltip__status {
+  color: var(--accent-3);
+}
+
+/* ---------- Calcite + Map components bridge --------------------------------- */
+/* :root:root outranks Calcite's own :root token block, whatever the load order. */
+:root:root {
+  --calcite-font-family: var(--font);
+  --calcite-color-brand: var(--accent);
+  --calcite-color-brand-hover: var(--accent-bright);
+  --calcite-color-brand-press: var(--accent);
+  --calcite-color-text-1: var(--text);
+  --calcite-color-text-2: var(--text-dim);
+  --calcite-color-text-3: var(--text-faint);
+  --calcite-color-text-inverse: var(--on-accent);
+  --calcite-color-text-link: var(--accent-bright);
+  --calcite-color-border-1: var(--glass-border);
+  --calcite-color-border-2: var(--glass-border-soft);
+  --calcite-color-border-3: var(--glass-border-soft);
+  --calcite-color-border-input: var(--glass-border);
+  --calcite-color-surface-1: var(--surface-1);
+  --calcite-color-surface-2: var(--surface-2);
+  --calcite-color-surface-3: var(--surface-3);
+  --calcite-color-surface-4: var(--surface-4);
+  /* Pre-"surface" Calcite token names, for apps on older SDK/Calcite versions */
+  --calcite-color-background: var(--surface-1);
+  --calcite-color-foreground-1: var(--surface-2);
+  --calcite-color-foreground-2: var(--surface-3);
+  --calcite-color-foreground-3: var(--surface-4);
+}
+
+/* ---------- ?clean screenshot mode ------------------------------------------ */
+/* Keeps the scene, top bar, panels, dock and attribution; hides floating chrome */
+.capture-clean .welcome,
+.capture-clean .fab-stack,
+.capture-clean .float-panel,
+.capture-clean .tooltip,
+.capture-clean [data-capture="hide"] {
+  display: none !important;
+}
+
+/* ---------- Responsive ------------------------------------------------------ */
+/* A right panel must end above the vertically centered nav stack; its body
+   scrolls, so nothing is lost on short screens. */
+@media (min-width: 721px) {
+  body:has(.nav-stack) .panel--right {
+    max-height: max(140px, calc(50vh - var(--nav-stack-h) / 2 - var(--content-top) - 12px));
+  }
+}
+
+/* Below ~900px the centered dock would collide with the FAB stack: lift FABs */
+@media (max-width: 900px) {
+  .fab-stack {
+    bottom: calc(var(--safe-bottom) + 84px);
+  }
+}
+
+@media (max-width: 720px) {
+  :root {
+    --edge: 12px;
+  }
+  .topbar {
+    padding: 0 14px;
+  }
+  .topbar__status,
+  .tab-link__label {
+    display: none;
+  }
+  .tab-link {
+    padding: 9px 12px;
+  }
+  .panel--left {
+    width: calc(100vw - 2 * var(--edge));
+    max-height: 40vh;
+  }
+  /* One right panel on phones: it moves above the dock, beside the FAB column */
+  .panel--right {
+    top: auto;
+    left: var(--edge);
+    right: calc(var(--edge) + 52px);
+    bottom: calc(var(--safe-bottom) + 84px);
+    width: auto;
+    max-height: 28vh;
+  }
+  .nav-stack,
+  .flyout {
+    display: none;
+  }
+  .dock {
+    bottom: 16px;
+    gap: 12px;
+    padding: 8px 12px;
+  }
+  .play-btn {
+    padding: 10px 14px;
+  }
+  .fab__label {
+    display: none;
+  }
+  .fab-stack {
+    bottom: calc(var(--safe-bottom) + 76px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .boot__logo,
+  .boot__pulse,
+  .boot__dots::after,
+  .dot--live,
+  .welcome__panel,
+  .modal__panel,
+  .modal__backdrop {
+    animation: none !important;
+  }
+  .boot,
+  .panel,
+  .flyout,
+  .float-panel,
+  .tooltip,
+  .ring__bar,
+  .accordion__a {
+    transition: none !important;
+  }
+}
+
+@media print {
+  .fab-stack,
+  .float-panel,
+  .boot {
+    display: none !important;
+  }
+}
+
+/* ---------- Keyframes ------------------------------------------------------- */
+@keyframes sc-pulse {
+  0% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  70% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.75);
+  }
+}
+@keyframes sc-boot-glow {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 7px rgba(0, 121, 193, 0.5));
+  }
+  50% {
+    filter: drop-shadow(0 0 22px rgba(0, 121, 193, 0.9));
+  }
+}
+@keyframes sc-dots {
+  0% {
+    content: "";
+  }
+  25% {
+    content: ".";
+  }
+  50% {
+    content: "..";
+  }
+  75% {
+    content: "...";
+  }
+}
+@keyframes sc-blink {
+  50% {
+    opacity: 0.35;
+  }
+}
+@keyframes sc-welcome-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+@keyframes sc-welcome-out {
+  to {
+    opacity: 0;
+    transform: translateY(10px) scale(0.97);
+  }
+}
+@keyframes sc-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes sc-pop {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}

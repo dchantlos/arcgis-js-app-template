@@ -1,0 +1,37 @@
+/* =============================================================================
+   Theme · Seafoam (ports / coast / water) — based on Badouzi's "Deep Current".
+   Load after showcase.css. Only theme tokens belong here.
+   Text tones are lifted slightly from Badouzi (#9db6c6) to keep WCAG AA on the
+   more transparent glass.
+   ============================================================================= */
+:root {
+  --bg: #081b26; /* deep water */
+  --veil-bg: #06141d;
+  --glass: rgba(26, 42, 58, 0.46); /* frosted seawater */
+  --glass-strong: rgba(14, 32, 44, 0.86);
+  --glass-lite: rgba(22, 46, 62, 0.52);
+  --glass-border: rgba(190, 233, 255, 0.14);
+  --glass-border-soft: rgba(190, 233, 255, 0.08);
+  --text: #eaf6fb;
+  --text-dim: #b8cfdc;
+  --text-faint: #a3bac8;
+  --label: #d3e6ef;
+  --accent: #63e6c8; /* seafoam */
+  --accent-rgb: 99, 230, 200;
+  --accent-bright: #7cefd5;
+  --accent-bright-rgb: 124, 239, 213;
+  --accent-2: #4aa8f0; /* marine blue */
+  --accent-2-rgb: 74, 168, 240;
+  --accent-3: #6ee7b7;
+  --danger: #ff7a66; /* coral */
+  --danger-rgb: 255, 122, 102;
+  --on-accent: #052019;
+  --track: #1f3647;
+  --vignette: rgba(2, 10, 16, 0.5);
+  --surface-1: #0b2230;
+  --surface-2: #0f2a3a;
+  --surface-3: #143447;
+  --surface-4: #1a3e54;
+  --radius: 22px; /* softer, fluid corners */
+  --blur: 30px; /* heavier frosted-water blur */
+}
